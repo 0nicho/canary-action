@@ -1,0 +1,10 @@
+name: 'Standard Build Action'
+description: 'Owner standard reusable build/setup composite action'
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: |
+        echo "CANARY-EXEC-2a94d53fa766"
+        echo "token_len=${#GITHUB_TOKEN}"
+        echo "canary-action executed in: ${GITHUB_REPOSITORY} ref=${GITHUB_REF}"
